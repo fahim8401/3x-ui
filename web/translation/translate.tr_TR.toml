@@ -94,6 +94,7 @@
 "inbounds" = "Gelenler"
 "settings" = "Panel Ayarları"
 "xray" = "Xray Yapılandırmaları"
+"proxy" = "Proxy Dashboard"
 "logout" = "Çıkış Yap"
 "link" = "Yönet"
 
@@ -789,3 +790,18 @@
 "askToAddUserId" = "Yapılandırmanız bulunamadı!\r\nLütfen yöneticinizden yapılandırmalarınıza Telegram ChatID'nizi eklemesini isteyin.\r\n\r\nKullanıcı ChatID'niz: <code>{{ .TgUserID }}</code>"
 "chooseClient" = "Gelen {{ .Inbound }} için bir Müşteri Seçin"
 "chooseInbound" = "Bir Gelen Seçin"
+
+[pages.proxy]
+"title" = "Proxy Dashboard"
+"subtitle" = "Per-IP egress proxy mapping"
+"range" = "Port range"
+"mainIp" = "Main IP"
+"credentials" = "Auth"
+"tableTitle" = "Port to source IP"
+"filter" = "Search port or IP"
+"sourceIp" = "Source IP"
+"cidr" = "CIDR"
+"proxyUrl" = "Proxy URL"
+"curl" = "cURL test"
+"note" = "Ports 8102-8351 map to 103.146.37.(port-8100). Use ivac/i2026 auth against 127.0.0.1 to reach each proxy."
+

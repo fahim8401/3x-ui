@@ -94,6 +94,7 @@
 "inbounds" = "Masuk"
 "settings" = "Pengaturan Panel"
 "xray" = "Konfigurasi Xray"
+"proxy" = "Proxy Dashboard"
 "logout" = "Keluar"
 "link" = "Kelola"
 
@@ -789,3 +790,18 @@
 "askToAddUserId" = "Konfigurasi Anda tidak ditemukan!\r\nSilakan minta admin Anda untuk menggunakan ChatID Telegram Anda dalam konfigurasi Anda.\r\n\r\nChatID Pengguna Anda: <code>{{ .TgUserID }}</code>"
 "chooseClient" = "Pilih Klien untuk Inbound {{ .Inbound }}"
 "chooseInbound" = "Pilih Inbound"
+
+[pages.proxy]
+"title" = "Proxy Dashboard"
+"subtitle" = "Per-IP egress proxy mapping"
+"range" = "Port range"
+"mainIp" = "Main IP"
+"credentials" = "Auth"
+"tableTitle" = "Port to source IP"
+"filter" = "Search port or IP"
+"sourceIp" = "Source IP"
+"cidr" = "CIDR"
+"proxyUrl" = "Proxy URL"
+"curl" = "cURL test"
+"note" = "Ports 8102-8351 map to 103.146.37.(port-8100). Use ivac/i2026 auth against 127.0.0.1 to reach each proxy."
+

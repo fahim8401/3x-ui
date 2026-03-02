@@ -94,6 +94,7 @@
 "inbounds" = "ورودی‌ها"
 "settings" = "تنظیمات پنل"
 "xray" = "پیکربندی ایکس‌ری"
+"proxy" = "Proxy Dashboard"
 "logout" = "خروج"
 "link" = "مدیریت"
 
@@ -789,3 +790,18 @@
 "askToAddUserId" = "پیکربندی شما یافت نشد!\r\nلطفاً از مدیر خود بخواهید که شناسه کاربر تلگرام خود را در پیکربندی (های) خود استفاده کند.\r\n\r\nشناسه کاربری شما: <code>{{ .TgUserID }}</code>"
 "chooseClient" = "یک مشتری برای ورودی {{ .Inbound }} انتخاب کنید"
 "chooseInbound" = "یک ورودی انتخاب کنید"
+
+[pages.proxy]
+"title" = "Proxy Dashboard"
+"subtitle" = "Per-IP egress proxy mapping"
+"range" = "Port range"
+"mainIp" = "Main IP"
+"credentials" = "Auth"
+"tableTitle" = "Port to source IP"
+"filter" = "Search port or IP"
+"sourceIp" = "Source IP"
+"cidr" = "CIDR"
+"proxyUrl" = "Proxy URL"
+"curl" = "cURL test"
+"note" = "Ports 8102-8351 map to 103.146.37.(port-8100). Use ivac/i2026 auth against 127.0.0.1 to reach each proxy."
+
