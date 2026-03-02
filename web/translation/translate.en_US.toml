@@ -94,6 +94,7 @@
 "inbounds" = "Inbounds"
 "settings" = "Panel Settings"
 "xray" = "Xray Configs"
+"proxy" = "Proxy Dashboard"
 "logout" = "Log Out"
 "link" = "Manage"
 
@@ -789,3 +790,17 @@
 "askToAddUserId" = "Your configuration is not found!\r\nPlease ask your admin to use your Telegram ChatID in your configuration(s).\r\n\r\nYour ChatID: <code>{{ .TgUserID }}</code>"
 "chooseClient" = "Choose a Client for Inbound {{ .Inbound }}"
 "chooseInbound" = "Choose an Inbound"
+
+[pages.proxy]
+"title" = "Proxy Dashboard"
+"subtitle" = "Per-IP egress proxy mapping"
+"range" = "Port range"
+"mainIp" = "Main IP"
+"credentials" = "Auth"
+"tableTitle" = "Port to source IP"
+"filter" = "Search port or IP"
+"sourceIp" = "Source IP"
+"cidr" = "CIDR"
+"proxyUrl" = "Proxy URL"
+"curl" = "cURL test"
+"note" = "Ports 8102-8351 map to 103.146.37.(port-8100). Use ivac/i2026 auth against 127.0.0.1 to reach each proxy."

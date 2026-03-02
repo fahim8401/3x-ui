@@ -1,0 +1,196 @@
+{{ template "page/head_start" .}}
+{{ template "page/head_end" .}}
+
+{{ template "page/body_start" .}}
+<a-layout id="app" v-cloak :class="themeSwitcher.currentTheme + ' proxy-page'">
+  <a-sidebar></a-sidebar>
+  <a-layout id="content-layout">
+    <a-layout-content>
+      <a-page-header
+        :title='{{ i18n "pages.proxy.title"}}'
+        :sub-title='{{ i18n "pages.proxy.subtitle"}}'>
+        <template #tags>
+          <a-tag color="blue">{{ i18n "pages.proxy.range" }}: [[ rangeLabel ]]</a-tag>
+          <a-tag color="green">{{ i18n "pages.proxy.mainIp" }}: [[ mainCidr ]]</a-tag>
+        </template>
+        <template #extra>
+          <a-space direction="horizontal">
+            <a-tag color="purple">{{ i18n "pages.proxy.credentials" }}: [[ credentials.username ]] / [[ credentials.password ]]</a-tag>
+          </a-space>
+        </template>
+        <template #footer>
+          <div class="proxy-help-text">
+            {{ i18n "pages.proxy.note" }}
+          </div>
+        </template>
+      </a-page-header>
+
+      <a-row :gutter="[16,16]">
+        <a-col :xs="24" :md="8">
+          <a-card hoverable>
+            <a-statistic :title='{{ i18n "pages.proxy.range" }}' :value="rangeLabel" />
+          </a-card>
+        </a-col>
+        <a-col :xs="24" :md="8">
+          <a-card hoverable>
+            <a-statistic :title='{{ i18n "pages.proxy.mainIp" }}' :value="mainCidr" />
+          </a-card>
+        </a-col>
+        <a-col :xs="24" :md="8">
+          <a-card hoverable>
+            <a-statistic :title='{{ i18n "pages.proxy.tableTitle" }}' :value="items.length" />
+          </a-card>
+        </a-col>
+      </a-row>
+
+      <a-card class="mt-16" :title='{{ i18n "pages.proxy.tableTitle" }}' hoverable>
+        <a-row :gutter="[8,8]" class="mb-12">
+          <a-col :xs="24" :md="16">
+            <a-input-search v-model="filter" allow-clear :placeholder='{{ i18n "pages.proxy.filter" }}' />
+          </a-col>
+          <a-col :xs="24" :md="8" class="text-right">
+            <a-tag color="geekblue">{{ i18n "pages.proxy.credentials" }}: [[ credentials.username ]] / [[ credentials.password ]]</a-tag>
+          </a-col>
+        </a-row>
+        <a-table
+          :data-source="filteredItems"
+          :columns="columns"
+          :pagination="{ pageSize }"
+          :row-key="record => record.port"
+          size="middle"
+          :scroll="{ x: true }">
+          <template slot="port" slot-scope="text, record">
+            <a-space size="small">
+              <a-tag color="blue">[[ record.port ]]</a-tag>
+              <a-tag v-if="record.isMain" color="green">{{ i18n "pages.proxy.mainIp" }}</a-tag>
+            </a-space>
+          </template>
+          <template slot="proxyUrl" slot-scope="text, record">
+            <a-space size="small" direction="horizontal">
+              <code class="break-all">[[ record.proxyUrl ]]</code>
+              <a-button size="small" icon="copy" @click="copy(record.proxyUrl)">{{ i18n "copy" }}</a-button>
+            </a-space>
+          </template>
+          <template slot="curl" slot-scope="text, record">
+            <a-space size="small" direction="horizontal">
+              <code class="break-all">[[ record.curl ]]</code>
+              <a-button size="small" icon="copy" @click="copy(record.curl)">{{ i18n "copy" }}</a-button>
+            </a-space>
+          </template>
+        </a-table>
+      </a-card>
+    </a-layout-content>
+  </a-layout>
+</a-layout>
+{{template "page/body_scripts" .}}
+{{template "component/aSidebar" .}}
+{{template "component/aThemeSwitch" .}}
+<script>
+  const PORT_START = 8102;
+  const PORT_END = 8351;
+  const BASE_IP_PREFIX = '103.146.37.';
+  const CREDENTIALS = { username: 'ivac', password: 'i2026' };
+
+  function buildProxyList() {
+    const list = [];
+    for (let port = PORT_START; port <= PORT_END; port++) {
+      const lastOctet = port - 8100;
+      const ip = `${BASE_IP_PREFIX}${lastOctet}`;
+      const cidr = lastOctet === 2 ? `${ip}/24` : `${ip}/32`;
+      list.push({
+        port,
+        ip,
+        cidr,
+        isMain: lastOctet === 2,
+        proxyUrl: `http://${CREDENTIALS.username}:${CREDENTIALS.password}@127.0.0.1:${port}`,
+        curl: `curl -s -x http://${CREDENTIALS.username}:${CREDENTIALS.password}@127.0.0.1:${port} https://api.ipify.org`
+      });
+    }
+    return list;
+  }
+
+  const columns = [{
+    title: '{{ i18n "port"}}',
+    dataIndex: 'port',
+    key: 'port',
+    scopedSlots: { customRender: 'port' },
+    sorter: (a, b) => a.port - b.port,
+  }, {
+    title: '{{ i18n "pages.proxy.sourceIp"}}',
+    dataIndex: 'ip',
+    key: 'ip',
+  }, {
+    title: '{{ i18n "pages.proxy.cidr"}}',
+    dataIndex: 'cidr',
+    key: 'cidr',
+    responsive: ['md'],
+  }, {
+    title: '{{ i18n "pages.proxy.proxyUrl"}}',
+    key: 'proxyUrl',
+    scopedSlots: { customRender: 'proxyUrl' },
+  }, {
+    title: '{{ i18n "pages.proxy.curl"}}',
+    key: 'curl',
+    scopedSlots: { customRender: 'curl' },
+  }];
+
+  const app = new Vue({
+    el: '#app',
+    delimiters: ['[[', ']]'],
+    data() {
+      const items = buildProxyList();
+      return {
+        themeSwitcher,
+        items,
+        filter: '',
+        pageSize: 10,
+        columns,
+        credentials: CREDENTIALS,
+        mainCidr: `${BASE_IP_PREFIX}2/24`,
+        rangeLabel: `${PORT_START}-${PORT_END}`,
+      }
+    },
+    computed: {
+      filteredItems() {
+        const query = this.filter.trim().toLowerCase();
+        if (!query) {
+          return this.items;
+        }
+        return this.items.filter(item =>
+          item.port.toString().includes(query) ||
+          item.ip.toLowerCase().includes(query) ||
+          item.cidr.toLowerCase().includes(query)
+        );
+      },
+    },
+    methods: {
+      copy(text) {
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text)
+            .then(() => this.$message.success('{{ i18n "copySuccess"}}'))
+            .catch(() => this.fallbackCopy(text));
+        } else {
+          this.fallbackCopy(text);
+        }
+      },
+      fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          this.$message.success('{{ i18n "copySuccess"}}');
+        } catch (e) {
+          this.$message.error('{{ i18n "somethingWentWrong"}}');
+        }
+        document.body.removeChild(textarea);
+      },
+    },
+  });
+</script>
+{{ template "page/body_end" .}}

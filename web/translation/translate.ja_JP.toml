@@ -94,6 +94,7 @@
 "inbounds" = "インバウンド一覧"
 "settings" = "パネル設定"
 "xray" = "Xray設定"
+"proxy" = "Proxy Dashboard"
 "logout" = "ログアウト"
 "link" = "リンク管理"
 
@@ -789,3 +790,18 @@
 "askToAddUserId" = "設定が見つかりませんでした！\r\n管理者に問い合わせて、設定にTelegramユーザーのChatIDを使用してください。\r\n\r\nあなたのユーザーChatID：<code>{{ .TgUserID }}</code>"
 "chooseClient" = "インバウンド {{ .Inbound }} のクライアントを選択"
 "chooseInbound" = "インバウンドを選択"
+
+[pages.proxy]
+"title" = "Proxy Dashboard"
+"subtitle" = "Per-IP egress proxy mapping"
+"range" = "Port range"
+"mainIp" = "Main IP"
+"credentials" = "Auth"
+"tableTitle" = "Port to source IP"
+"filter" = "Search port or IP"
+"sourceIp" = "Source IP"
+"cidr" = "CIDR"
+"proxyUrl" = "Proxy URL"
+"curl" = "cURL test"
+"note" = "Ports 8102-8351 map to 103.146.37.(port-8100). Use ivac/i2026 auth against 127.0.0.1 to reach each proxy."
+

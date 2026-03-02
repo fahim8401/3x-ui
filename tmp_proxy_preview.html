@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="http://localhost:8000/web/assets/ant-design-vue/antd.min.css">
+  <link rel="stylesheet" href="http://localhost:8000/web/assets/css/custom.min.css">
+  <style>[v-cloak]{display:none}</style>
+  <title>Proxy Dashboard Preview</title>
+</head>
+<body>
+  <div id="message"></div>
+  <a-layout id="app" v-cloak class="light proxy-page" style="padding:16px">
+    <a-page-header title="Proxy Dashboard" sub-title="Per-IP egress proxy mapping">
+      <template #tags>
+        <a-tag color="blue">Port range: [[ rangeLabel ]]</a-tag>
+        <a-tag color="green">Main IP: [[ mainCidr ]]</a-tag>
+      </template>
+      <template #extra>
+        <a-tag color="purple">Auth: [[ credentials.username ]] / [[ credentials.password ]]</a-tag>
+      </template>
+      <template #footer>
+        <div>Ports 8102-8351 map to 103.146.37.(port-8100). Use ivac/i2026 auth against 127.0.0.1 to reach each proxy.</div>
+      </template>
+    </a-page-header>
+
+    <a-row :gutter="[16,16]">
+      <a-col :xs="24" :md="8">
+        <a-card hoverable>
+          <a-statistic title="Port range" :value="rangeLabel" />
+        </a-card>
+      </a-col>
+      <a-col :xs="24" :md="8">
+        <a-card hoverable>
+          <a-statistic title="Main IP" :value="mainCidr" />
+        </a-card>
+      </a-col>
+      <a-col :xs="24" :md="8">
+        <a-card hoverable>
+          <a-statistic title="Port to source IP" :value="items.length" />
+        </a-card>
+      </a-col>
+    </a-row>
+
+    <a-card class="mt-16" title="Port to source IP" hoverable>
+      <a-row :gutter="[8,8]" class="mb-12">
+        <a-col :xs="24" :md="16">
+          <a-input-search v-model="filter" allow-clear placeholder="Search port or IP" />
+        </a-col>
+        <a-col :xs="24" :md="8" class="text-right">
+          <a-tag color="geekblue">Auth: [[ credentials.username ]] / [[ credentials.password ]]</a-tag>
+        </a-col>
+      </a-row>
+      <a-table
+        :data-source="filteredItems"
+        :columns="columns"
+        :pagination="{ pageSize }"
+        :row-key="record => record.port"
+        size="middle"
+        :scroll="{ x: true }">
+        <template slot="port" slot-scope="text, record">
+          <a-space size="small">
+            <a-tag color="blue">[[ record.port ]]</a-tag>
+            <a-tag v-if="record.isMain" color="green">Main IP</a-tag>
+          </a-space>
+        </template>
+        <template slot="proxyUrl" slot-scope="text, record">
+          <a-space size="small" direction="horizontal">
+            <code class="break-all">[[ record.proxyUrl ]]</code>
+            <a-button size="small" icon="copy" @click="copy(record.proxyUrl)">Copy</a-button>
+          </a-space>
+        </template>
+        <template slot="curl" slot-scope="text, record">
+          <a-space size="small" direction="horizontal">
+            <code class="break-all">[[ record.curl ]]</code>
+            <a-button size="small" icon="copy" @click="copy(record.curl)">Copy</a-button>
+          </a-space>
+        </template>
+      </a-table>
+    </a-card>
+  </a-layout>
+  <script src="http://localhost:8000/web/assets/vue/vue.min.js"></script>
+  <script src="http://localhost:8000/web/assets/ant-design-vue/antd.min.js"></script>
+  <script>
+    const PORT_START = 8102;
+    const PORT_END = 8351;
+    const BASE_IP_PREFIX = '103.146.37.';
+    const CREDENTIALS = { username: 'ivac', password: 'i2026' };
+    function buildProxyList() {
+      const list = [];
+      for (let port = PORT_START; port <= PORT_END; port++) {
+        const lastOctet = port - 8100;
+        const ip = `${BASE_IP_PREFIX}${lastOctet}`;
+        const cidr = lastOctet === 2 ? `${ip}/24` : `${ip}/32`;
+        list.push({
+          port,
+          ip,
+          cidr,
+          isMain: lastOctet === 2,
+          proxyUrl: `http://${CREDENTIALS.username}:${CREDENTIALS.password}@127.0.0.1:${port}`,
+          curl: `curl -s -x http://${CREDENTIALS.username}:${CREDENTIALS.password}@127.0.0.1:${port} https://api.ipify.org`
+        });
+      }
+      return list;
+    }
+    const columns = [{
+      title: 'Port',
+      dataIndex: 'port',
+      key: 'port',
+      scopedSlots: { customRender: 'port' },
+      sorter: (a, b) => a.port - b.port,
+    }, {
+      title: 'Source IP',
+      dataIndex: 'ip',
+      key: 'ip',
+    }, {
+      title: 'CIDR',
+      dataIndex: 'cidr',
+      key: 'cidr',
+      responsive: ['md'],
+    }, {
+      title: 'Proxy URL',
+      key: 'proxyUrl',
+      scopedSlots: { customRender: 'proxyUrl' },
+    }, {
+      title: 'cURL test',
+      key: 'curl',
+      scopedSlots: { customRender: 'curl' },
+    }];
+    new Vue({
+      el: '#app',
+      delimiters: ['[[', ']]'],
+      data() {
+        const items = buildProxyList();
+        return {
+          items,
+          filter: '',
+          pageSize: 8,
+          columns,
+          credentials: CREDENTIALS,
+          mainCidr: `${BASE_IP_PREFIX}2/24`,
+          rangeLabel: `${PORT_START}-${PORT_END}`,
+        }
+      },
+      computed: {
+        filteredItems() {
+          const query = this.filter.trim().toLowerCase();
+          if (!query) return this.items;
+          return this.items.filter(item =>
+            item.port.toString().includes(query) ||
+            item.ip.toLowerCase().includes(query) ||
+            item.cidr.toLowerCase().includes(query)
+          );
+        },
+      },
+      methods: {
+        copy(text) {
+          if (!text) return;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => this.$message.success('Copied')).catch(() => this.fallbackCopy(text));
+          } else {
+            this.fallbackCopy(text);
+          }
+        },
+        fallbackCopy(text) {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          try { document.execCommand('copy'); this.$message.success('Copied'); } catch (e) { this.$message.error('Copy failed'); }
+          document.body.removeChild(textarea);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
